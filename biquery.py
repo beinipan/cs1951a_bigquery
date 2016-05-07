@@ -6,7 +6,6 @@ import time
 
 start_time = time.time()
 
-
 # Grab the application's default credentials from the environment.
 credentials = GoogleCredentials.get_application_default()
 # Construct the service object for interacting with the BigQuery API.
@@ -21,7 +20,6 @@ AND subreddit IN (SELECT subreddit FROM (SELECT subreddit, count(*) AS c1 FROM [
 ORDER BY r1
 LIMIT 100000)
 '''
-
 try:
     # [START run_query]
     query_request = bigquery_service.jobs()
