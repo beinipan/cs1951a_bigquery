@@ -11,15 +11,24 @@ credentials = GoogleCredentials.get_application_default()
 # Construct the service object for interacting with the BigQuery API.
 bigquery_service = build('bigquery', 'v2', credentials=credentials)
 
-query = '''
-SELECT subreddit, body FROM
-(SELECT subreddit, body, RAND() AS r1
+query = '''SELECT body, score 
+FROM 
+(SELECT subreddit, body, score, RAND() AS r1
 FROM [fh-bigquery:reddit_comments.2016_01]
-WHERE REGEXP_MATCH(body, r'(?i:obama)')
-AND subreddit IN (SELECT subreddit FROM (SELECT subreddit, count(*) AS c1 FROM [fh-bigquery:reddit_comments.2016_01] WHERE REGEXP_MATCH(body, r'(?i:obama)') GROUP BY subreddit ORDER BY c1 DESC LIMIT 10))
+WHERE subreddit == "politics"
+AND body != "[deleted]"
 ORDER BY r1
-LIMIT 100000)
-'''
+LIMIT 20000)'''#training data
+
+# query = '''SELECT subreddit, body FROM
+# (SELECT subreddit, body, RAND() AS r1
+# FROM [fh-bigquery:reddit_comments.2016_01]
+# WHERE REGEXP_MATCH(body, r'(?i:obama)')
+# AND subreddit IN (SELECT subreddit FROM (SELECT subreddit, count(*) AS c1 FROM [fh-bigquery:reddit_comments.2016_01] WHERE REGEXP_MATCH(body, r'(?i:obama)') GROUP BY subreddit ORDER BY c1 DESC LIMIT 10))
+# ORDER BY r1
+# LIMIT 100000)
+# '''
+
 try:
     # [START run_query]
     query_request = bigquery_service.jobs()
@@ -53,11 +62,3 @@ except HttpError as err:
 elapsed_time = time.time() - start_time
 print "elapsed time in seconds: " + str(elapsed_time)
 
-'''SELECT body, score 
-FROM 
-(SELECT subreddit, body, score, RAND() AS r1
-FROM [fh-bigquery:reddit_comments.2016_01]
-WHERE subreddit == "AskReddit"
-AND body != "[deleted]"
-ORDER BY r1
-LIMIT 1000)'''#training data
