@@ -52,3 +52,12 @@ except HttpError as err:
 
 elapsed_time = time.time() - start_time
 print "elapsed time in seconds: " + str(elapsed_time)
+
+'''SELECT body, score 
+FROM 
+(SELECT subreddit, body, score, RAND() AS r1
+FROM [fh-bigquery:reddit_comments.2016_01]
+WHERE subreddit == "AskReddit"
+AND body != "[deleted]"
+ORDER BY r1
+LIMIT 1000)'''#training data
