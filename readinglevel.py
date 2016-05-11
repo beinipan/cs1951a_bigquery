@@ -16,11 +16,13 @@ def load_file(file_path):
             comments.append(text)
     return comments
 
-documents = load_file("worldnewsFilteredQuery.csv")
+docs = ["AskReddit2008.csv", "AskReddit2009.csv", "AskReddit2010.csv", "AskReddit2011.csv", "AskReddit2012.csv", "AskReddit2013.csv", "AskReddit2014.csv"]
 
-levels = [textstat.flesch_reading_ease(comment) for comment in documents if textstat.sentence_count(comment) != 0]
-
-print sum(levels)/len(levels)
+for doc_path in docs:
+	documents = load_file(doc_path)
+	levels = [textstat.flesch_reading_ease(comment) for comment in documents if textstat.sentence_count(comment) != 0]
+	print "reading level for " + doc_path
+	print sum(levels)/len(levels)
 
 elapsed_time = time.time() - start_time
 print "elapsed time in seconds: " + str(elapsed_time)

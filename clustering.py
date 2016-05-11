@@ -26,12 +26,12 @@ def load_file(file_path):
             comments.append(text)
     return comments
 
-documents = load_file("aww2016.csv")
+documents = load_file("2016askhistorians.csv")
 true_k = 6
 
 vectorizer = TfidfVectorizer(stop_words='english', max_features=200000, use_idf=True, ngram_range=(1,3))
 X = vectorizer.fit_transform(documents)
-model = KMeans(n_clusters=true_k, init='k-means++', max_iter=500, n_init=1)
+model = KMeans(n_clusters=true_k, init='k-means++', max_iter=1000, n_init=1)
 model.fit(X)
 print("Top terms per cluster:")
 order_centroids = model.cluster_centers_.argsort()[:, ::-1]

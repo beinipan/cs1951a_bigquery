@@ -11,53 +11,60 @@ credentials = GoogleCredentials.get_application_default()
 # Construct the service object for interacting with the BigQuery API.
 bigquery_service = build('bigquery', 'v2', credentials=credentials)
 
-query = '''SELECT body, score 
-FROM 
-(SELECT subreddit, body, score, RAND() AS r1
-FROM [fh-bigquery:reddit_comments.2016_01]
-WHERE subreddit == "politics"
-AND body != "[deleted]"
-ORDER BY r1
-LIMIT 20000)'''#training data
+subreddit = "politics"
 
-# query = '''SELECT subreddit, body FROM
-# (SELECT subreddit, body, RAND() AS r1
-# FROM [fh-bigquery:reddit_comments.2016_01]
-# WHERE REGEXP_MATCH(body, r'(?i:obama)')
-# AND subreddit IN (SELECT subreddit FROM (SELECT subreddit, count(*) AS c1 FROM [fh-bigquery:reddit_comments.2016_01] WHERE REGEXP_MATCH(body, r'(?i:obama)') GROUP BY subreddit ORDER BY c1 DESC LIMIT 10))
-# ORDER BY r1
-# LIMIT 100000)
-# '''
+months = ["2008", "2009", "2010", "2011", "2012", "2013", "2014" ] 
 
-try:
-    # [START run_query]
-    query_request = bigquery_service.jobs()
-    query_data = {
-        'query': (query)
-    }
+for month in months:
+    query = '''SELECT body, score 
+    FROM 
+    (SELECT subreddit, body, score, RAND() AS r1
+    FROM [fh-bigquery:reddit_comments.''' + month + ''']
+    WHERE subreddit == \"''' + subreddit + '''\"
+    AND body != "[deleted]"
+    AND body != "[removed]"
+    AND REGEXP_MATCH(body, r'(?i:obama)')
+    ORDER BY r1
+    LIMIT 1000)'''#training data
 
-    query_response = query_request.query(
-        projectId="reddit-1280",
-        body=query_data).execute()
-    # [END run_query]
+    # query = '''SELECT subreddit, body FROM
+    # (SELECT subreddit, body, RAND() AS r1
+    # FROM [fh-bigquery:reddit_comments.2016_01]
+    # WHERE REGEXP_MATCH(body, r'(?i:obama)')
+    # AND subreddit IN (SELECT subreddit FROM (SELECT subreddit, count(*) AS c1 FROM [fh-bigquery:reddit_comments.2016_01] WHERE REGEXP_MATCH(body, r'(?i:obama)') GROUP BY subreddit ORDER BY c1 DESC LIMIT 10))
+    # ORDER BY r1
+    # LIMIT 100000)
+    # '''
 
-    # [START print_results]
-    print('Query Results:')
-    print query_response['rows'][1]
+    try:
+        # [START run_query]
+        query_request = bigquery_service.jobs()
+        query_data = {
+            'query': (query)
+        }
 
-    with open('bigquery.csv', 'wb') as csvfile:
-	    writer = csv.writer(csvfile)
+        query_response = query_request.query(
+            projectId="project1-1258",
+            body=query_data).execute()
+        # [END run_query]
 
-	    for row in query_response['rows']:
-	    	writer.writerow([field['v'].encode('utf-8') for field in row['f']])
-    # for row in query_response['rows']:
+        # [START print_results]
+        print('Query Results:')
+        print query_response.keys()
 
-    #     print('\t'.join(field['v'] for field in row['f']))
-    # [END print_results]
+        with open(subreddit + month + '.csv', 'wb') as csvfile:
+    	    writer = csv.writer(csvfile)
 
-except HttpError as err:
-    print('Error: {}'.format(err.content))
-    raise err
+    	    for row in query_response['rows']:
+    	    	writer.writerow([field['v'].encode('utf-8') for field in row['f']])
+        # for row in query_response['rows']:
+
+        #     print('\t'.join(field['v'] for field in row['f']))
+        # [END print_results]
+
+    except HttpError as err:
+        print('Error: {}'.format(err.content))
+        raise err
 
 elapsed_time = time.time() - start_time
 print "elapsed time in seconds: " + str(elapsed_time)
